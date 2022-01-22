@@ -50,16 +50,31 @@ HWND CTextInputCtrl::Create(HWND hwndParent)
                         g_hInst, 
                         this);
 
+    // Keyboard の登録 for WM_INPUT
+    RAWINPUTDEVICE rid;
+
+    rid.usUsagePage = 0x01;
+    rid.usUsage = 0x06;
+    rid.dwFlags = 0;
+    rid.hwndTarget = _hwnd;
+    RegisterRawInputDevices(&rid, 1, sizeof(RAWINPUTDEVICE));
 
     return _hwnd;
 }
 
 //----------------------------------------------------------------
 //
-//
+// 
 //
 //----------------------------------------------------------------
 
+// キー入力直後のデータの流れは以下のようになります．
+// 1 キーボードドライバが入力を得る
+// 2 低水準フックを処理する
+// 3 システムはフォアグラウンドスレッドに結びついた IME の ImeProcessKey，ImeToAsciiEx を順に呼び出し，キーイベントを IME が握りつぶすかどうかを決めてもらう．
+// WM_KEYDOWN や WM_KEYUP が生成されるのは，この IME のキー検査後です．
+// これはつまり，あるスレッドに WM_KEYDOWN や WM_KEYUP を送信しても，IME に擬似的なキー入力を行うことはできないということです．
+// そもそも IME はシステムから直接キー入力をコールバックされるので，WM_KEYDOWN や WM_KEYUP を見ているわけではないのです．
 LRESULT CALLBACK CTextInputCtrl::s_WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     HDC hdc;
@@ -67,6 +82,9 @@ LRESULT CALLBACK CTextInputCtrl::s_WndProc(HWND hwnd, UINT message, WPARAM wPara
     CTextInputCtrl *ptic;
     switch (message)
     {
+        case WM_INPUT:
+            printf("\n");
+            break;
         case WM_CREATE:
             SetThis(hwnd, ((CREATESTRUCT *)lParam)->lpCreateParams);
             SetTimer(hwnd, TIMERID_CARET, GetCaretBlinkTime(), NULL);
@@ -121,8 +139,11 @@ LRESULT CALLBACK CTextInputCtrl::s_WndProc(HWND hwnd, UINT message, WPARAM wPara
                 ptic->OnMouseMove(wParam, lParam);
             break;
 
-
         case WM_IME_COMPOSITION:
+            // GCS_COMPSTR は入力中の文字列を取得(WCHAR配列)
+            // GCS_COMPATTR は入力中の1文字事の属性(BYTE配列)
+            // GCS_CURSORPOS は入力中の文字列のカーソル位置(文字単位)
+            // 変換を確定せずに次の文字を入力した場合はGCS_RESULTSTRと同時にGCS_COMPSTRフラグも含まれる
             if (lParam & GCS_RESULTSTR)
             {
                 HIMC himc = ImmGetContext(hwnd);
@@ -167,6 +188,9 @@ LRESULT CALLBACK CTextInputCtrl::s_WndProc(HWND hwnd, UINT message, WPARAM wPara
             return DefWindowProc(hwnd, message, wParam, lParam);
 
         case WM_CHAR:
+            // IMEがOFFの場合に来る．
+            // IMEがONの場合は来ない
+            // 中国語の小数点のように，IMEがONでも変換されない文字はこちらで処理する．
             //
             // wParam is a character of the result string. 
             //

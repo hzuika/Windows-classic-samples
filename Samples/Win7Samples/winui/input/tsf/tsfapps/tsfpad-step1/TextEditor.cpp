@@ -246,16 +246,19 @@ BOOL CTextEditor::InitTSF()
         return FALSE;
     }
 
+    // アプリケーションは、 ITfDocumentMgr :: CreateContextメソッドを呼び出すことで、ITextStoreACPインターフェイスのインスタンスを取得できます。
     if (FAILED(_pDocumentMgr->CreateContext(g_TfClientId, 0, _pTextStore, &_pInputContext, &_ecTextStore)))
     {
         return FALSE;
     }
 
+    // 有効化するコンテキストをスタックに追加する
     if (FAILED(_pDocumentMgr->Push(_pInputContext)))
     {
         return FALSE;
     }
 
+    // 各ドキュメントごとに持つリソース
     ITfDocumentMgr *pDocumentMgrPrev;
     g_pThreadMgr->AssociateFocus(_hwnd, _pDocumentMgr, &pDocumentMgrPrev);
     if (pDocumentMgrPrev)
@@ -273,6 +276,7 @@ BOOL CTextEditor::UninitTSF()
 {
     if (_pDocumentMgr)
     {
+        // コンテキストを使用しなくなった
         _pDocumentMgr->Pop(TF_POPF_ALL);
     }
 

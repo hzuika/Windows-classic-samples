@@ -20,9 +20,19 @@ LRESULT CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 HWND g_hwnd;
 CTextInputCtrl *g_pTextInputCtrl;
 
+// アプリケーションで一つ持てばいいリソース
+// 必ず必要
+// CoCreateInstanceで作製
+// こいつを使って色々作る
+// スレッドマネージャ
+// こいつのソース(ITfSource)に登録(AdviseSink)しておくことで，変換中に該当する仮想関数が呼び出される．
+// スレッドごとに一つだけ存在して，このスレッドマネージャを経由してあれこれ処理を行う
 ITfThreadMgr *g_pThreadMgr = NULL;
 TfClientId g_TfClientId = TF_CLIENTID_NULL;
 
+// アプリケーションで一つ持てばいいリソース
+// ITfThreadMgrのQueryInterfaceを呼べば入手できる
+// TextServiceにキーを処理させる(でないと入力できない)
 ITfKeystrokeMgr *g_pKeystrokeMgr = NULL;
 
 //----------------------------------------------------------------
@@ -47,6 +57,8 @@ int APIENTRY MyWinMain(HINSTANCE hInstance,
         goto Exit;
     }
 
+    // 適切なタイミングでITfThreadMgr::Activate関数を呼び出す
+    // 同じ数だけITfThreadMgr::Deactivate関数を呼び出す必要がある．
     if (FAILED(g_pThreadMgr->Activate(&g_TfClientId)))
     {
         goto Exit;
@@ -78,6 +90,7 @@ int APIENTRY MyWinMain(HINSTANCE hInstance,
 	 	DispatchMessage(&msg);
 	}
 
+    // ITfThreadMgr::Activate関数と同じ数だけITfThreadMgr::Deactivate関数を呼び出す必要がある．
     g_pThreadMgr->Deactivate();
 
 Exit:
@@ -148,6 +161,15 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
        return FALSE;
    }
 
+   // Keyboard の登録 for WM_INPUT
+   RAWINPUTDEVICE rid;
+
+   rid.usUsagePage = 0x01;
+   rid.usUsage = 0x06;
+   rid.dwFlags = 0;
+   rid.hwndTarget = g_hwnd;
+   RegisterRawInputDevices(&rid, 1, sizeof(RAWINPUTDEVICE));
+
    ShowWindow(g_hwnd, nCmdShow);
    UpdateWindow(g_hwnd);
    ShowWindow(g_pTextInputCtrl->GetWnd(), SW_SHOW);
@@ -211,7 +233,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
-
+    case WM_INPUT:
+        printf("\n");
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}

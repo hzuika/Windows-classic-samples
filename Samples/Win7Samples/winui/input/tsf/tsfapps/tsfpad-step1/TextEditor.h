@@ -80,7 +80,10 @@ private:
     CTextLayout _layout;
 
     CTextStore *_pTextStore;
+    // 各ドキュメントごとに持つリソース
     ITfDocumentMgr *_pDocumentMgr;
+    // 各コンテキストごとに持つリソース
+    // コンテキストはドキュメントに1:1で対応しなくてもよいですが対応することが多い
     ITfContext *_pInputContext;
     TfEditCookie _ecTextStore;
 };
