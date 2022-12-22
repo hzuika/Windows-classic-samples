@@ -140,43 +140,43 @@ LRESULT CALLBACK CTextInputCtrl::s_WndProc(HWND hwnd, UINT message, WPARAM wPara
             break;
 
         case WM_IME_COMPOSITION:
-            // GCS_COMPSTR は入力中の文字列を取得(WCHAR配列)
-            // GCS_COMPATTR は入力中の1文字事の属性(BYTE配列)
-            // GCS_CURSORPOS は入力中の文字列のカーソル位置(文字単位)
-            // 変換を確定せずに次の文字を入力した場合はGCS_RESULTSTRと同時にGCS_COMPSTRフラグも含まれる
-            if (lParam & GCS_RESULTSTR)
-            {
-                HIMC himc = ImmGetContext(hwnd);
+            //// GCS_COMPSTR は入力中の文字列を取得(WCHAR配列)
+            //// GCS_COMPATTR は入力中の1文字事の属性(BYTE配列)
+            //// GCS_CURSORPOS は入力中の文字列のカーソル位置(文字単位)
+            //// 変換を確定せずに次の文字を入力した場合はGCS_RESULTSTRと同時にGCS_COMPSTRフラグも含まれる
+            //if (lParam & GCS_RESULTSTR)
+            //{
+            //    HIMC himc = ImmGetContext(hwnd);
 
-                if (himc)
-                {
-                    LONG nSize = ImmGetCompositionString(himc, GCS_RESULTSTR, NULL, 0);
-                    if (nSize)
-                    {
-                        LPWSTR psz = (LPWSTR)LocalAlloc(LPTR, nSize + sizeof(WCHAR));
-                        if (psz)
-                        {
-                            ImmGetCompositionString(himc, GCS_RESULTSTR, psz, nSize);
-                            LocalFree(psz);
-                        }
-                    }
-                }
-                ImmReleaseContext(hwnd, himc);
+            //    if (himc)
+            //    {
+            //        LONG nSize = ImmGetCompositionString(himc, GCS_RESULTSTR, NULL, 0);
+            //        if (nSize)
+            //        {
+            //            LPWSTR psz = (LPWSTR)LocalAlloc(LPTR, nSize + sizeof(WCHAR));
+            //            if (psz)
+            //            {
+            //                ImmGetCompositionString(himc, GCS_RESULTSTR, psz, nSize);
+            //                LocalFree(psz);
+            //            }
+            //        }
+            //    }
+            //    ImmReleaseContext(hwnd, himc);
 
-                //
-                // If we don't want to receive WM_IME_CHAR or WM_CHAR with
-                // this result string, we should not call DefWindowProc()
-                // with GCS_RESULTSTR, GCS_RESULTREADSTR, GCS_RESULTCLAUSE and
-                // GCS_RESULTREADCLAUSE flags. 
-                //
-                // lParam &= ~(GCS_RESULTCLAUSE |
-                //             GCS_RESULTREADCLAUSE |
-                //             GCS_RESULTREADSTR |
-                //             GCS_RESULTSTR);
-                // if (!lParam)
-                //     break;
-                //
-            }
+            //    //
+            //    // If we don't want to receive WM_IME_CHAR or WM_CHAR with
+            //    // this result string, we should not call DefWindowProc()
+            //    // with GCS_RESULTSTR, GCS_RESULTREADSTR, GCS_RESULTCLAUSE and
+            //    // GCS_RESULTREADCLAUSE flags. 
+            //    //
+            //    // lParam &= ~(GCS_RESULTCLAUSE |
+            //    //             GCS_RESULTREADCLAUSE |
+            //    //             GCS_RESULTREADSTR |
+            //    //             GCS_RESULTSTR);
+            //    // if (!lParam)
+            //    //     break;
+            //    //
+            //}
             return DefWindowProc(hwnd, message, wParam, lParam);
 
         case WM_IME_CHAR:
