@@ -5,6 +5,8 @@
 #include "InputScope.h"
 #include "tsattrs.h"
 
+#include <iostream>
+
 //+---------------------------------------------------------------------------
 //
 // IUnknown
@@ -158,6 +160,16 @@ STDAPI CTextStore::GetSelection(ULONG ulIndex, ULONG ulCount, TS_SELECTION_ACP *
 
 STDAPI CTextStore::SetSelection(ULONG ulCount, const TS_SELECTION_ACP *pSelection)
 {
+    OutputDebugString((L"SetSelection, "));
+    wchar_t acpStart[12];
+    wchar_t acpEnd[12];
+    _itow_s(pSelection[0].acpStart, acpStart, 10);
+    _itow_s(pSelection[0].acpEnd, acpEnd, 10);
+    OutputDebugString(acpStart);
+    OutputDebugString(L", ");
+    OutputDebugString(acpEnd);
+    OutputDebugString(L"\n");
+
     if (ulCount > 0)
     { 
         _pEditor->MoveSelection(pSelection[0].acpStart, pSelection[0].acpEnd);
@@ -213,6 +225,10 @@ STDAPI CTextStore::GetText(LONG acpStart, LONG acpEnd, __out_ecount(cchPlainReq)
 
 STDAPI CTextStore::SetText(DWORD dwFlags, LONG acpStart, LONG acpEnd, __in_ecount(cch) const WCHAR *pchText, ULONG cch, TS_TEXTCHANGE *pChange)
 {
+    OutputDebugString((L"SetText, "));
+    OutputDebugString(pchText);
+    OutputDebugString(L"\n");
+
     LONG acpRemovingEnd;
 
     if (acpStart > (LONG)_pEditor->GetTextLength())
@@ -460,6 +476,10 @@ STDAPI CTextStore::QueryInsertEmbedded(const GUID *pguidService, const FORMATETC
 
 STDAPI CTextStore::InsertTextAtSelection(DWORD dwFlags, __in_ecount(cch) const WCHAR *pchText, ULONG cch, LONG *pacpStart, LONG *pacpEnd, TS_TEXTCHANGE *pChange)
 {
+    OutputDebugString((L"InsertTextAtSelection, "));
+    OutputDebugString(pchText);
+    OutputDebugString(L"\n");
+
     LONG acpStart = _pEditor->GetSelectionStart();
     LONG acpEnd = _pEditor->GetSelectionEnd();
 
