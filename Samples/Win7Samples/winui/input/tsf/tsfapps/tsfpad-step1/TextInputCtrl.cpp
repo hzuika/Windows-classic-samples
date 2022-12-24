@@ -212,6 +212,10 @@ LRESULT CALLBACK CTextInputCtrl::s_WndProc(HWND hwnd, UINT message, WPARAM wPara
                 wc[1] = L'\0';
                 ptic->_editor.InsertAtSelection(wc);
                 InvalidateRect(hwnd, NULL, TRUE);
+
+                OutputDebugString(wc);
+                OutputDebugString(L"\n");
+
             }
             break;
 
